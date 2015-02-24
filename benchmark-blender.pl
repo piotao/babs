@@ -175,6 +175,7 @@ sub RunTesting {
 			E("no blender file nor log file to parse! $!");
 		}
 	}
+	ReportResults('header');
 	while( !$end ){
 		if(open IN,$cmd){
 			if($CONFIG{verbose}){
@@ -206,6 +207,7 @@ sub RunTesting {
 										$change,$addrun
 					) if $CONFIG{verbose};
 					$old = $CONFIG{average};
+					ReportResults('data');
 					next;
 				}
 				if(m{^read blend: (.*)$}){
@@ -227,11 +229,12 @@ sub RunTesting {
 		}
 	}
 	print "\n" if $CONFIG{verbose};
-	$CONFIG{end} = time;
+	ReportResults('finish');
 }
 
 sub ReportResults {
-	if(exists $CONFIG{frames}){
+	my $what = shift;
+	if($what eq 'header'){
 		printf(
 			"# BABS, [c] Piotr Arlukowicz <piotao\@polskikursblendera.pl>, ".
 			"date: %s timestamp: %i\n",
@@ -243,19 +246,24 @@ sub ReportResults {
 			say "# last blend read: $CONFIG{lastReadBlend}";
 		}
 		else{
-			printf("# epsilon: %1.4f addrun: %i frames: %i start: %i end: %i delta:".
-				" %is\n",$CONFIG{maxAverageChange},$CONFIG{maxRunsToEnsure},
-				$CONFIG{framecount},$CONFIG{start},$CONFIG{end},
-				$CONFIG{end}-$CONFIG{start}
+			printf("# epsilon: %1.4f addrun: %i frames: %i start: %i\n",
+				$CONFIG{maxAverageChange},$CONFIG{maxRunsToEnsure},
+				$CONFIG{framecount},$CONFIG{start}
 			);
 			printf("# command: %s\n",$CONFIG{blenderCommand});
 		}
 		printf("#%11s %12s %12s\n",'time','average','delta');
-		foreach my $frame (@{$CONFIG{frames}}){
-			printf("%12.2f %12.4f %12.4e\n",
-				$frame->{seconds},$frame->{average},$frame->{change}
-			);
-		}
+	}
+	elsif($what eq 'data'){
+		#foreach my $frame (@{$CONFIG{frames}}){
+		my $frame = @{$CONFIG{frames}}[-1];
+		printf("%12.2f %12.4f %12.4e\n",
+			$frame->{seconds},$frame->{average},$frame->{change}
+		);
+		#}
+	}
+	elsif($what eq 'finish'){
+		printf "# finished after %i seconds total",time-$CONFIG{start};
 	}
 }
 
