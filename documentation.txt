@@ -2,17 +2,17 @@ PROGRAM benchark-blender.pl
             Blender Automated Benchmark Suite (BABS)
             [cc-by] Piotr Arlukowicz, <piotao@polskikursblendera.pl>
 
-    Documentation: Use the Force, read the Source! OK, read at least config
-    section below :)
+    Documentation: read at least config section below :)
 
   USAGE
             benchmark-blender.pl [options] -b blendfile
             benchmark-blender.pl -h
 
   OPTIONS
-    Options are specified via command line using typical getopt notation.
-    Each option should start with - and is one letter long. Do not join
-    options with their parameters, always add spaces around.
+    Options are specified via command line using a typical getopt notation.
+    Each option should start with "-" and is one letter long. Do not join
+    options with their parameters, always add spaces around. Bad: -i2, good:
+    -i 2.
 
             -e  file       - blender executable (default: blender)
 
@@ -21,19 +21,20 @@ PROGRAM benchark-blender.pl
 
             -p  path       - blender path (default: .)
 
-    Path to the blender. I'm usually keep it in quite a long path, and this
-    could be a typical case. The location of:
+    Path to the blender. Can be absolute or relative to the place where you
+    are run the script. Usually I keep Blender in quite a long path, and
+    this could be a typical case. The location of:
     "/home/piotao/bin/blender-git/install/linux" can be expressed by several
-    shorten terms: "%home/%git/%install". Then, if you are using this terms,
+    shorter terms: "%home/%git/%install". Then, if you are using this terms,
     you have to put them into CONFIG section inside the script, like this:
 
             %home => '/home/piotao',
             %git  => 'bin/blender-git',
             %install => 'install/linux',
 
-    The script will rebuild all config variables from those information,
-    glueing them together. In this way you can make shortcuts and aliases,
-    and run some additional commands along with blender testing.
+    The script will substitute all config variables from those information.
+    In this way you can make shortcuts and aliases, and run some additional
+    commands along with blender testing.
 
             -b  file       - blender file (HAS to be specified)
 
@@ -42,27 +43,29 @@ PROGRAM benchark-blender.pl
     option). Usually this has to be specified, or written into config
     section.
 
-            -c  string     - command to run blender with options, default renders only
-                             one, first frame several times (defaults to "-f 1")
+            -c  string     - the entire command to run blender with options
 
-    This is the command the script executes. The whole long command which
-    should run blender rendering, passing all options to it and produce
-    results in the form of a log, in which there is Time: (xx:yy.zz) string.
-    Then the script can catch this results for each rendered frame and
-    calculate results.
+    This is the command the script executes. The output of this command has
+    to have a string: "Time: (xx:yy.zz)". The script can catch this time and
+    collect all results for each rendered frame and calculate the average
+    time. If you have to run Blender for an animation, and you want to catch
+    times of render per frame, you have to run Blender as a standalone
+    program, and then you have to catch the log. The info about time is in
+    this log. You can then put this log to be parsed by this script with
+    "-l" option.
 
-    This command is by default composed from another config parts, for
-    example:
+    The typical command is by default composed from another config parts,
+    for example:
 
             blenderCommand => '%blenderPath/%blenderExe %options',
 
     The script is building the right command from this %-something pieces.
-    Each of them have to be specified in config sections, and you can have
-    your own defs and strings defined. All tokens with "%" sign are replaced
-    by theirs values defined in another parts of the config, so finally you
-    can get the whole command. If there is a recursion problem, script will
-    catch this and stop. So, if you define %blenderPath and %blenderExe like
-    this:
+    Each of them has to be specified in config sections, and you can have
+    your own defs and strings defined there too. All tokens with "%" sign
+    are replaced by their values defined somewhere in another parts of the
+    config, so finally you can get the whole command. If there is a
+    recursion problem, script will catch this and stop. So, if you define
+    %blenderPath and %blenderExe like this:
 
             blenderPath => '/bin',
             blenderExe  => 'blender_x86',
@@ -77,30 +80,29 @@ PROGRAM benchark-blender.pl
 
             options=>'-noaudio -noglsl -nojoystick -b %blenderFile %thr -f1 2>&1 '
 
-    Which will then have the %blenderFile and %thr token replaced by their
-    corresponding values. For blender file you have to specify "-b" option,
-    and for threads number to use you have to put "-t" option.
+    ...which will then have the %blenderFile and %thr token replaced by
+    their corresponding values. For blender file you have to specify "-b"
+    option, and for threads number to use you have to put "-t" option.
 
-            -a  float      - maximal allowed change of averaged time calculated after
-                       each render run
+            -a  float      - maximal change of averaged time
 
     This is the number, which stands for precision of testing. Each new test
     which was carried out by running blender is measured in terms of time.
-    This time is different each time, so it is averaged, to gain the best
-    approximation. But, how you can tell the average time is good enough?
-    How many runs you really have to do, in order to get good average time?
-    Please notice, that running blender three, or ten times, and averaging
-    all times is not enough, if your times are very different from each
-    other. So, this value can force program to run tests ENOUGH times, and
-    after each time the new average is calculated from all gained tests.
-    This new average is compared to the old one, and IF the old one differs
-    no more than this value, then tests are finished. To understand this,
-    consider this example:
+    This measured time is different (probably) from each other time, so it
+    is averaged, to gain the best approximation. But, how you can tell the
+    average time is good enough? How many runs you really have to do, in
+    order to get the good average time? Please notice, that running blender
+    three, or even ten times, and averaging all times is not enough, if your
+    times are very different from each other. So, this value can force
+    program to run tests ENOUGH times, and after each time the new average
+    is calculated from all gained tests. This new average is compared to the
+    old one, and IF the old one differs no more than this value, then all
+    tests are finished. To understand this, consider this example:
 
-    Here, we have few times measured during some blender runs. They have
-    diffrent values. How many of them is enough to have a good average value
-    which do not change much with next tests? Let's assume we can accept 0.1
-    variance between two consecutive averaged results.
+    Here, we have just a few times measured during some blender runs. They
+    have diffrent values. How many of such runs is enough to have a good
+    average value which do not change much with next tests? Let's assume we
+    can accept 0.1 change between two consecutive averaged results.
 
             No Time measurements            Average of times so far         Diffrence of average
       1   10                  10 (of course!)           (nothing yet)
@@ -117,15 +119,15 @@ PROGRAM benchark-blender.pl
     collected. For each new result, we calculated average value of all
     measurements and this new average value is put into the third column.
     Now, we can calculate the diffrence between our new average and the
-    previous one. This value is our epsilon - the change which tells us, how
-    much the average is changed between tests. If this change is small
+    previous one. This value is our *epsilon* - the change which tells us,
+    how much the average is changed between tests. If this change is small
     enough, we can stop further testing, because our result will be no
     better that current one! So, in this example we know, that there is only
     6 run sufficient instead of 8, which can save some time. In fact, this
     procedure is executed as long as the change of averages is smaller than
     the epsilon. In our case we assumed that we are acceptig 0.1 value, so
     change smaller that that do not count much. This value is set by default
-    to 1% or 0.01 (you have to specify a float number, not percent).
+    to 0.01 (you have to specify a float number, not percent).
 
     For lower epsilon values the computations can lasts longer and some of
     them can take a really long time. On my 6-cores cpu, under linux, where
@@ -134,7 +136,7 @@ PROGRAM benchark-blender.pl
     For the same computer, in the save environment, the GPU has to use only
     8-10 iterations.
 
-            -i  int        - additional runs after time is stable for the first time
+            -i  int        - additional runs after time is stable
 
     This is the number which tells how many additional runs the script
     should run AFTER the epsilon limit is reached. Look at the above
@@ -146,7 +148,7 @@ PROGRAM benchark-blender.pl
     repetitions is reset, and after gaining the minimum again, this number
     of additional runs still has to be performed.
 
-            -t  int        - number of threads to use, passed to blender by -t option
+            -t  int        - number of threads blender use
 
     This option is used to specify how many threads should blender use in
     order to render on CPU. For GPU this value is ignored. If this number is
@@ -159,12 +161,12 @@ PROGRAM benchark-blender.pl
 
     This is simple: it displays a short help about the program.
 
-            -v             - runs the program with verbose output and some debug
+            -v             - verbose output and some debug
 
     This option helped me to design this program and debug it. You do not
     have to use it, and I leaved it here just for those, who are curious :)
 
-            -l  txtfile    - blender log file to analyze only and produce results
+            -l  txtfile    - blender log file to analyze only
 
     If you do not want to run blender with any blender file, but you have a
     log output from some runs, you can just analyze that log file with no
@@ -185,13 +187,11 @@ PROGRAM benchark-blender.pl
     All config definition is build as KEY => VALUE. KEY has to be unique
     string. VALUE can be a number, a string, etc. It can be even another
     structure, but then you have to know what you are doing (learn Perl! -
-    this is very good lang)
-
-    So, if you define something like:
+    this is very good language). So, if you define something like:
 
             script => 'perl',
 
-    notice that what is on the right HAVE to be in apostrophes. The left
+    notice that what is on the right side HAS to be in apostrophes. The left
     side is automatically cited, so no apostrophes are needed. However, if
     you like this:
 
@@ -202,20 +202,21 @@ PROGRAM benchark-blender.pl
 
             'big idea' => 'my mind',
 
-    After you have some such keys and values defined, you can use them in
-    new values. Note however that you can't use them as mixed key names. So
-    this works:
+    This will not work either, because keys with spaces won't be parsed
+    correctly. When you have some such keys and values defined, you can use
+    them to define new values. Note however that you can't use them as mixed
+    key names. So this works:
 
             newidea => 'this is %script',
 
-    but this don't work:
+    but this doesn't work:
 
             %script => 'something',
 
-    Note that newidea key will be translated to 'this is perl', because
-    before it was written that string 'script' is defined as 'perl'. So you
-    can make some substitutions, and they are hand if you have to keep
-    diffrent configurations inside one script. Look at this:
+    Note that newidea key will be translated to 'this is something' because
+    of substitutions. So you can make some even more, nested substitutions,
+    and they are handy if you have to keep diffrent configurations inside
+    one script. Look at this:
 
             blenderCommand => '%setup1',
 
@@ -224,31 +225,38 @@ PROGRAM benchark-blender.pl
 
     In this case one can change only one option at the start of the script,
     and all is changed respectively. One can then specify new configuration
-    option via command line, putting "-c '%setup2'" parameter, and this will
-    use a whole new, and different definition from the script config. I
+    option via the command line, putting "-c '%setup2'" parameter, and this
+    will use a whole new, and different definition from the script config. I
     think this is so handy, that should suffice my needs and maybe even
     yours.
 
     Remember that some of keys in the config file are reseved and they are
-    used in the code directly. There are:
+    used in the code directly (however this may change in the Future). There
+    are:
 
             blenderCommand
             maxAverageChange
             maxRunsToEnsure
             verbose
-            blenderFile (this is used only to ensure that the file you specified, exists)
+            blenderFile
             version
 
     Also, the script will create some new config keys during its work, so
     they are also kind-of reserved, because even if you defined them, they
     can be overwritten. They are:
 
-            framecount    - this is the numer of tests performed so far
-            start         - time in seconds from EPOCH when script just started
-            end           - time in seconds when script is about finish
-            totalsum      - sum of all time measurements
-            average       - current average value
-            frames        - a list of all collected time measurements (and more)
+            framecount
+                    - this is the numer of tests performed so far
+            start
+                    - time in seconds from EPOCH when script just started
+            end
+                    - time in seconds when script is about finish
+            totalsum
+                    - sum of all time measurements
+            average
+                    - current average value
+            frames
+                    - a list of all collected time measurements (and more)
 
     All other keys are not mandatory and you can change them, use them, etc.
 
@@ -266,7 +274,7 @@ PROGRAM benchark-blender.pl
     security code is enough, so better try not to build recursive
     definitions.
 
-   Output of blender command
+   Output of the blender command
     This script works with the assumption that blender will print a log of
     it's rendering process to the standard output. Script is then reading
     this output using normal redirection pipe. If you change this behaviour,
