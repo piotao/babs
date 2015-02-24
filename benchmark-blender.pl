@@ -58,7 +58,7 @@ my %CONFIG = (# CONFIG START
 
 	threads => 0,        # threads to use, 0 is automatic default
 	verbose => 0,        # silent if 0, dot's and some debug if 1
-	version => '0.1',    # just version to keep track of it
+	version => '0.3',    # just version to keep track of it
 	start   => time,     # start of the program in real seconds
 	parselog=> '',
 
