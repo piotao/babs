@@ -241,14 +241,12 @@ sub ReportResults {
 			scalar localtime, time
 		);
 		if($CONFIG{mode} eq 'log'){
-			say "# parse log from:  $CONFIG{parselog}, start: $CONFIG{start}, ".
-					"end: $CONFIG{end}, delta: @{[$CONFIG{end}-$CONFIG{start}]}s";
+			say "# parse log from:  $CONFIG{parselog}, start: $CONFIG{start}";
 			say "# last blend read: $CONFIG{lastReadBlend}";
 		}
 		else{
-			printf("# epsilon: %1.4f addrun: %i frames: %i start: %i\n",
-				$CONFIG{maxAverageChange},$CONFIG{maxRunsToEnsure},
-				$CONFIG{framecount},$CONFIG{start}
+			printf("# epsilon: %1.4f addrun: %i start: %i\n",
+				$CONFIG{maxAverageChange},$CONFIG{maxRunsToEnsure},$CONFIG{start}
 			);
 			printf("# command: %s\n",$CONFIG{blenderCommand});
 		}
@@ -263,7 +261,8 @@ sub ReportResults {
 		#}
 	}
 	elsif($what eq 'finish'){
-		printf "# finished after %i seconds total",time-$CONFIG{start};
+		printf "# total runs count: %i\n",$CONFIG{framescount});
+		printf "# finished at %i after %i seconds total",time,time-$CONFIG{start};
 	}
 }
 
