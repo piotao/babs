@@ -261,7 +261,7 @@ sub ReportResults {
 		#}
 	}
 	elsif($what eq 'finish'){
-		printf "# total runs count: %i\n",$CONFIG{framescount});
+		printf "# total runs count: %i\n",$CONFIG{framescount};
 		printf "# finished at %i after %i seconds total",time,time-$CONFIG{start};
 	}
 }
