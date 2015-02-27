@@ -86,7 +86,6 @@ sub W(@);sub I(@);sub E(@); sub D(@); # function prototypes, forward decl.
 # main program (so short!)
 &Setup;
 &RunTesting;
-&ReportResults;
 exit;
 
 # and some functions.
@@ -261,8 +260,8 @@ sub ReportResults {
 		#}
 	}
 	elsif($what eq 'finish'){
-		printf "# total runs count: %i\n",$CONFIG{framescount};
-		printf "# finished at %i after %i seconds total",time,time-$CONFIG{start};
+		printf "# total runs count: %i\n",$CONFIG{framecount};
+		printf "# finished at %i after %i seconds total\n",time,time-$CONFIG{start};
 	}
 }
 
