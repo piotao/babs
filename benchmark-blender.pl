@@ -20,9 +20,9 @@ use Getopt::Long;
 
 my %CONFIG = (# CONFIG START
 
-# test can be run AS long, as average time is not changing more than 1%.
+# test can be run AS long, AS the average time is not changing more than 1%.
 # Define this here:
-	maxAverageChange => '0.01',  # procent of change allowed
+	maxAverageChange => '0.01',  # procent of change allowed, (enter a real number)
 
 # testing UNTIL average time do not change significantly for this numer
 # of additional runs:
@@ -30,7 +30,7 @@ my %CONFIG = (# CONFIG START
 
 # file system paths, etc.
 	blenderExe  => 'blender',  # main blender executable
-	blenderPath => '.',  # path to blender 
+	blenderPath => '.',        # path to blender 
 #	blenderPath => 'C:\Users\piotao\Desktop\testy\%bpath',  # example for windows
 
 	bpath => 'blender-2.73a-windows64',
@@ -55,6 +55,7 @@ my %CONFIG = (# CONFIG START
 	
 	options1 => '-noaudio -noglsl -nojoystick ',
 	options2 => '%options1 -b %blenderFile %thr -f 1 2>&1 ',
+                                    # note, %thr is a keyword for threads
 
 	threads => 0,        # threads to use, 0 is automatic default
 	verbose => 0,        # silent if 0, dot's and some debug if 1
@@ -90,6 +91,7 @@ exit;
 
 # and some functions.
 
+# utility function for preventing some recursive bugs in config parsing
 sub checkRecursion {
 	my @keys = keys %CONFIG;
 	foreach my $key (keys %CONFIG){
@@ -100,6 +102,7 @@ sub checkRecursion {
 	}
 }
 
+# initial configuration
 sub Setup {
 	my $end = 0;
 	GetOptions(
@@ -153,6 +156,7 @@ sub Setup {
 	}
 }
 
+# runs all tests according to configuration
 sub RunTesting {
 	my $epsilon = $CONFIG{maxAverageChange};
 	my $change = 2*$epsilon;
@@ -231,6 +235,7 @@ sub RunTesting {
 	ReportResults('finish');
 }
 
+# reports results
 sub ReportResults {
 	my $what = shift;
 	if($what eq 'header'){
@@ -265,6 +270,7 @@ sub ReportResults {
 	}
 }
 
+# error, warning or log/debug messages
 sub E(@){
 	print Dumper \%CONFIG;
 	die "[E] @_\n";
@@ -279,6 +285,7 @@ sub I(@){
 	say "[I] @_";
 }
 
+# an information about how to use the program
 sub help {
 	say qq!
 Blender Automated Benchark Suite (BABS), version $CONFIG{version},
@@ -324,22 +331,23 @@ Documentation: read at least config section below :)
 
 =head2 OPTIONS
 
-Options are specified via command line using a typical getopt notation. Each
-option should start with C<-> and is one letter long. Do not join options with
-their parameters, always add spaces around. Bad: -i2, good: -i 2.
+Options are specified via command line using a typical (unix-like) getopt
+notation. Each option should start with C<-> and is one letter long. Do not
+join options with their parameters, always add spaces around. Bad: -i2, good:
+-i 2.
 
 	-e  file       - blender executable (default: blender)
 
-The blender executable file itself. In Linux, this will be C<blender>, while in
+Blender executable file, itself. Under Linux, this will be C<blender>, while in
 windows this can be C<blender.exe> or C<blender.lnk>.
 
 	-p  path       - blender path (default: .)
 
-Path to the blender. Can be absolute or relative to the place where you are
-run the script. Usually I keep Blender in quite a long path, and this could
-be a typical case. The location of: C</home/piotao/bin/blender-git/install/linux>
+Path to the program. It can be absolute or relative to the place where you are
+running the script. Usually I keep Blender in quite a long path, and this could
+be a typical scenario. The location of: C</home/piotao/bin/blender-git/install/linux>
 can be expressed by several shorter terms: C<%home/%git/%install>. Then, if
-you are using this terms, you have to put them into CONFIG section inside the
+you are using those terms, you have to put them into CONFIG section inside the
 script, like this:
 
 	%home => '/home/piotao',
